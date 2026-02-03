@@ -5,6 +5,9 @@ import { FaBox, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from 'reac
 import { toast } from 'react-toastify';
 import './Dashboard.css';
 
+// ADDED: API URL configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -21,9 +24,17 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
+      // CHANGED: Added API_URL to both requests
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
       const [productsRes, lowStockRes] = await Promise.all([
-        axios.get('/api/products'),
-        axios.get('/api/products/low-stock')
+        axios.get(`${API_URL}/api/products`, config),
+        axios.get(`${API_URL}/api/products/low-stock`, config)
       ]);
 
       if (productsRes.data.success) {

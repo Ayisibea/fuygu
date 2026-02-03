@@ -5,6 +5,9 @@ import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import './Products.css';
 
+// ADDED: API URL configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -17,7 +20,15 @@ const Products = () => {
    */
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await axios.get('/api/products');
+      // CHANGED: Added API_URL and token
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      const response = await axios.get(`${API_URL}/api/products`, config);
 
       if (response.data.success) {
         setProducts(response.data.data);
@@ -69,7 +80,15 @@ const Products = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await axios.delete(`/api/products/${id}`);
+        // CHANGED: Added API_URL and token
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        };
+
+        const response = await axios.delete(`${API_URL}/api/products/${id}`, config);
 
         if (response.data.success) {
           toast.success('Product deleted successfully');

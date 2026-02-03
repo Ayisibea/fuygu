@@ -3,6 +3,9 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
+// Add API URL configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -23,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          const response = await axios.get('/api/auth/me');
+          const response = await axios.get(`${API_URL}/api/auth/me`); // CHANGED
           
           if (response.data.success) {
             setUser(response.data.data);
@@ -44,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password }); // CHANGED
       
       if (response.data.success) {
         const { token, ...userData } = response.data.data;
@@ -67,7 +70,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post(`${API_URL}/api/auth/register`, { // CHANGED
         username,
         email,
         password

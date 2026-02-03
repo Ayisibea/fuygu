@@ -4,6 +4,9 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import './ProductForm.css';
 
+// ADDED: API URL configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const ProductForm = ({ isEdit = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -27,7 +30,13 @@ const ProductForm = ({ isEdit = false }) => {
    */
   const fetchProduct = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/products/${id}`);
+      // CHANGED: Added API_URL and token
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       if (response.data.success) {
         const product = response.data.data;
@@ -79,12 +88,20 @@ const ProductForm = ({ isEdit = false }) => {
     };
 
     try {
+      // CHANGED: Added API_URL and token to both requests
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
       let response;
 
       if (isEdit) {
-        response = await axios.put(`/api/products/${id}`, productData);
+        response = await axios.put(`${API_URL}/api/products/${id}`, productData, config);
       } else {
-        response = await axios.post('/api/products', productData);
+        response = await axios.post(`${API_URL}/api/products`, productData, config);
       }
 
       if (response.data.success) {
