@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import './ProductForm.css';
 
 // ADDED: API URL configuration
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = 'https://inventory-2zu1.onrender.com';
 
 const ProductForm = ({ isEdit = false }) => {
   const navigate = useNavigate();

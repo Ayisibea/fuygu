@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import './Dashboard.css';
 
 // ADDED: API URL configuration
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = 'https://inventory-2zu1.onrender.com';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
