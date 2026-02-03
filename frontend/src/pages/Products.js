@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
@@ -12,53 +12,65 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    filterProducts();
-  }, [searchTerm, categoryFilter, products]);
-
-  const fetchProducts = async () => {
+  /**
+   * ✅ Wrapped in useCallback
+   */
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await axios.get('/api/products');
-      
+
       if (response.data.success) {
         setProducts(response.data.data);
         setFilteredProducts(response.data.data);
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterProducts = () => {
+  /**
+   * ✅ Wrapped in useCallback
+   */
+  const filterProducts = useCallback(() => {
     let filtered = products;
 
     if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        product =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (categoryFilter !== 'All') {
-      filtered = filtered.filter(product => product.category === categoryFilter);
+      filtered = filtered.filter(
+        product => product.category === categoryFilter
+      );
     }
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchTerm, categoryFilter]);
+
+  /**
+   * ✅ Dependency-safe effects
+   */
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    filterProducts();
+  }, [filterProducts]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         const response = await axios.delete(`/api/products/${id}`);
-        
+
         if (response.data.success) {
           toast.success('Product deleted successfully');
           fetchProducts();
@@ -70,7 +82,17 @@ const Products = () => {
     }
   };
 
-  const categories = ['All', 'Electronics', 'Clothing', 'Food', 'Furniture', 'Toys', 'Books', 'Sports', 'Other'];
+  const categories = [
+    'All',
+    'Electronics',
+    'Clothing',
+    'Food',
+    'Furniture',
+    'Toys',
+    'Books',
+    'Sports',
+    'Other'
+  ];
 
   if (loading) {
     return (
@@ -107,7 +129,9 @@ const Products = () => {
             {categories.map(category => (
               <button
                 key={category}
-                className={`filter-btn ${categoryFilter === category ? 'active' : ''}`}
+                className={`filter-btn ${
+                  categoryFilter === category ? 'active' : ''
+                }`}
                 onClick={() => setCategoryFilter(category)}
               >
                 {category}
@@ -121,7 +145,8 @@ const Products = () => {
             {filteredProducts.length === 0 ? (
               <div className="text-center" style={{ padding: '30px' }}>
                 <p style={{ fontSize: '18px', color: '#666' }}>
-                  No products found. <Link to="/add-product">Add your first product</Link>
+                  No products found.{' '}
+                  <Link to="/add-product">Add your first product</Link>
                 </p>
               </div>
             ) : (
@@ -147,10 +172,15 @@ const Products = () => {
                         <td>${product.price.toFixed(2)}</td>
                         <td>{product.quantity}</td>
                         <td>
-                          <span className={`badge badge-${
-                            product.status === 'In Stock' ? 'success' :
-                            product.status === 'Low Stock' ? 'warning' : 'danger'
-                          }`}>
+                          <span
+                            className={`badge badge-${
+                              product.status === 'In Stock'
+                                ? 'success'
+                                : product.status === 'Low Stock'
+                                ? 'warning'
+                                : 'danger'
+                            }`}
+                          >
                             {product.status}
                           </span>
                         </td>
@@ -182,7 +212,9 @@ const Products = () => {
         </div>
 
         <div className="products-summary">
-          <p>Showing {filteredProducts.length} of {products.length} products</p>
+          <p>
+            Showing {filteredProducts.length} of {products.length} products
+          </p>
         </div>
       </div>
     </div>

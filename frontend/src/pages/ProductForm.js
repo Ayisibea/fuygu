@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -22,16 +22,13 @@ const ProductForm = ({ isEdit = false }) => {
   const [loading, setLoading] = useState(false);
   const [fetchingProduct, setFetchingProduct] = useState(isEdit);
 
-  useEffect(() => {
-    if (isEdit && id) {
-      fetchProduct();
-    }
-  }, [isEdit, id]);
-
-  const fetchProduct = async () => {
+  /**
+   * ✅ Wrapped in useCallback
+   */
+  const fetchProduct = useCallback(async () => {
     try {
       const response = await axios.get(`/api/products/${id}`);
-      
+
       if (response.data.success) {
         const product = response.data.data;
         setFormData({
@@ -45,14 +42,23 @@ const ProductForm = ({ isEdit = false }) => {
           reorderLevel: product.reorderLevel.toString()
         });
       }
-      
+
       setFetchingProduct(false);
     } catch (error) {
       console.error('Error fetching product:', error);
       toast.error('Failed to load product');
       navigate('/products');
     }
-  };
+  }, [id, navigate]);
+
+  /**
+   * ✅ Proper dependency array
+   */
+  useEffect(() => {
+    if (isEdit && id) {
+      fetchProduct();
+    }
+  }, [isEdit, id, fetchProduct]);
 
   const handleChange = (e) => {
     setFormData({
@@ -74,7 +80,7 @@ const ProductForm = ({ isEdit = false }) => {
 
     try {
       let response;
-      
+
       if (isEdit) {
         response = await axios.put(`/api/products/${id}`, productData);
       } else {
@@ -82,12 +88,17 @@ const ProductForm = ({ isEdit = false }) => {
       }
 
       if (response.data.success) {
-        toast.success(`Product ${isEdit ? 'updated' : 'created'} successfully`);
+        toast.success(
+          `Product ${isEdit ? 'updated' : 'created'} successfully`
+        );
         navigate('/products');
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'create'} product`);
+      toast.error(
+        error.response?.data?.message ||
+          `Failed to ${isEdit ? 'update' : 'create'} product`
+      );
     } finally {
       setLoading(false);
     }
@@ -106,7 +117,9 @@ const ProductForm = ({ isEdit = false }) => {
     <div className="product-form-container">
       <div className="container">
         <div className="form-card">
-          <h1 className="form-title">{isEdit ? 'Edit Product' : 'Add New Product'}</h1>
+          <h1 className="form-title">
+            {isEdit ? 'Edit Product' : 'Add New Product'}
+          </h1>
 
           <form onSubmit={handleSubmit} className="product-form">
             <div className="form-row">
@@ -137,7 +150,11 @@ const ProductForm = ({ isEdit = false }) => {
                   required
                   disabled={isEdit}
                 />
-                {isEdit && <small className="form-text">SKU cannot be changed</small>}
+                {isEdit && (
+                  <small className="form-text">
+                    SKU cannot be changed
+                  </small>
+                )}
               </div>
             </div>
 
@@ -248,8 +265,18 @@ const ProductForm = ({ isEdit = false }) => {
               >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-success" disabled={loading}>
-                {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Product' : 'Create Product')}
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={loading}
+              >
+                {loading
+                  ? isEdit
+                    ? 'Updating...'
+                    : 'Creating...'
+                  : isEdit
+                  ? 'Update Product'
+                  : 'Create Product'}
               </button>
             </div>
           </form>
